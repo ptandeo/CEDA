@@ -8,4 +8,4 @@ A description and a test of the code is given in the ipython notebook "test_CEDA
 Please contact **Pierre Tandeo** (pierre.tandeo@imt-atlantique.fr) in case of bugs.
 
 # CITING
-This Python library is attached to the following publication: Dreano, D., Tandeo, P., Pulido, M., Ait‐El‐Fquih, B., Chonavel, T., & Hoteit, I. (2017). Estimating model‐error covariances in nonlinear state‐space models using Kalman smoothing and the expectation–maximization algorithm. *Quarterly Journal of the Royal Meteorological Society*, 143(705), 1877-1885.
+This Python library is attached to the following publication (http://onlinelibrary.wiley.com/doi/10.1002/qj.3048/full): Dreano, D., Tandeo, P., Pulido, M., Ait‐El‐Fquih, B., Chonavel, T., & Hoteit, I. (2017). Estimating model‐error covariances in nonlinear state‐space models using Kalman smoothing and the expectation–maximization algorithm. *Quarterly Journal of the Royal Meteorological Society*, 143(705), 1877-1885.
