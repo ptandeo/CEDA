@@ -21,6 +21,20 @@ def l96_f(t, y, F):
 
   return(dy)
 
+def l96_jac(y, dt):
+    n = np.shape(y)[0]
+    J = np.zeros([n,n])
+    for j in range(n-1):
+        J[j,j-2] = -y[j-1]
+        J[j,j-1] = y[j+1] - y[j-2]
+        J[j,j]   = -1
+        J[j,j+1] = y[j-1]
+    J[n-1,n-3] = -y[n-2]
+    J[n-1,n-2] = y[0] - y[n-3]
+    J[n-1,n-1] = -1
+    J[n-1,0]   = y[n-2]
+    return dt*J + np.eye(n)
+
 def l96_predict(y0, dT, F):
   r = ode(l96_f).set_integrator('dopri5')
   r.set_initial_value(y0, 0).set_f_params(F)

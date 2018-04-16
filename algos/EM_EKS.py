@@ -10,7 +10,19 @@ def _likelihood(Xf, Pf, Yo, R, H):
     if not np.isnan(Yo[0,t]):
       sig = H[:,:,t].dot(Pf[:,:,t]).dot(H[:,:,t].T) + R
       innov = Yo[:,t] - H[:,:,t].dot(Xf[:,t])
-      l -= .5 * np.log(np.linalg.det(sig))
+      
+      #l -= .5 * np.log(np.linalg.det(sig))
+    
+      sign, l_tmp = np.linalg.slogdet(sig)
+      l -= .5 * sign * l_tmp
+              
+      #try:
+      #  import warnings
+      #  warnings.filterwarnings('error')
+      #  l -= .5 * np.log(np.linalg.det(sig))
+      #except:
+      #  import pdb; pdb.set_trace()
+
       l -= .5 * innov.T.dot(np.linalg.solve(sig, innov))
   return l
 
@@ -92,7 +104,7 @@ def _maximize(Xs, Ps, Ps_lag, Yo, h, jacH, f, jacF, structQ, baseQ=None):
       R += H.dot(Ps[:,:,t+1]).dot(H.T)
   R = .5*(R + R.T)
   R /= nobs
-
+    
   sumSig = 0
   for t in range(T):
     F = jacF(Xs[:,t+1])
@@ -188,7 +200,8 @@ def EM_EKS(params):
 
     # E-step
     Xs, Ps, Ps_lag, Xa, Pa, Xf, Pf, H = _EKS(Nx, No, T, xb, B, Q, R, Yo, f, jacF,
-                                             h, jacH, alpha)
+                                             h, jacH, alpha)   
+    
     loglik[k] = _likelihood(Xf, Pf, Yo, R, H)
     rmse_em[k] = RMSE(Xs - Xt)
     Xs_all[...,k] = Xs
