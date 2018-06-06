@@ -24,14 +24,9 @@ def sqrt_svd(A):
 
    return sqrtA
 
-def climat_background(f, x0, T):
-  Nx = x0.size
-  X = np.zeros((Nx, T+1))
-  X[:,0] = x0
-  for t in range(T-1):
-    X[:,t+1] = f(X[:,t])
-  xb = X.mean(1)
-  B  = np.cov(X)
+def climat_background(X_true):
+  xb = np.mean(X_true,1)
+  B  = np.cov(X_true)
   return xb, B
 
 def RMSE(E):

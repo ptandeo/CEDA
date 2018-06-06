@@ -146,6 +146,10 @@ def LI_EKS(params):
     loglik[k] = _likelihood(Xf, Pf, Yo, R, H)
     rmse[k] = RMSE(Xs - Xt)
     
+    # adaptive background state
+    xb = Xs[:,0]
+    B = Ps[:,:,0]
+
     # adaptive-EKF
     Xa, Pa, Xf, Pf, H, Q_adapt, R_adapt = _adaptive_EKF(Nx, No, T, xb, B, Q, R, Yo, f, jacF, h, jacH, alpha, tau)    
     Q = np.nanmedian(Q_adapt,2) # Q = Q_adapt[:,:,T]
@@ -156,7 +160,7 @@ def LI_EKS(params):
     R_all[:,:,k+1] = R
 
   res = {
-          'smoothed_states'                                : Xs_all,
+          'smoothed_states'                                : Xs_all, # PIERRE: WHY DO WE KEEP ALL THE STATES (KEEP ONLY THE LAST ONE?)
           'LI_model_noise_covariance'                      : Q_all,
           'LI_observation_noise_covariance'                : R_all,
           'loglikelihood'                                  : loglik,

@@ -91,27 +91,40 @@ def _maximize(Xs, Ps, Ps_lag, Yo, h, jacH, f, jacF, structQ, baseQ=None):
   Nx = Xs.shape[0]
 
   xb = Xs[:,0]
-
   B = Ps[:,:,0]
-
   R = 0
   nobs = 0
+  sumSig = 0
+
+  # Dreano et al. 2017, Eq. (34)
   for t in range(T):
     if not np.isnan(Yo[0,t]):
       nobs += 1
       H = jacH(Xs[:,t+1])
-      R += np.outer(Yo[:,t] - h(Xs[:,t+1]), Yo[:,t] - h(Xs[:,t+1]))
+      R += np.outer(Yo[:,t] - h(Xs[:,t+1]), Yo[:,t] - h(Xs[:,t+1])) # PIERRE: h or H???
       R += H.dot(Ps[:,:,t+1]).dot(H.T)
-  R = .5*(R + R.T)
+  R = .5*(R + R.T) # PIERRE: NECESSARY?
   R /= nobs
-    
-  sumSig = 0
+  
+  #mat_A = 0
+  #mat_B = 0
+  #mat_C = 0
+
   for t in range(T):
+
+    # Dreano et al. 2017, Eq. (33)
     F = jacF(Xs[:,t+1])
     sumSig += Ps[:,:,t+1]
     sumSig += np.outer(Xs[:,t+1]-f(Xs[:,t]), Xs[:,t+1]-f(Xs[:,t]))
     sumSig += F.dot(Ps[:,:,t]).dot(F.T)
-    sumSig -= Ps_lag[:,:,t].dot(F.T) + F.dot(Ps_lag[:,:,t].T)
+    sumSig += - Ps_lag[:,:,t].dot(F.T) - F.dot(Ps_lag[:,:,t].T) # PIERRE: T at the end?
+
+    # Shumway 1982, Eq. (13)
+    #mat_A = Ps[:,:,t] + np.outer(Xs[:,t], Xs[:,t])
+    #mat_B = Ps_lag[:,:,t] + np.outer(Xs[:,t+1], Xs[:,t])
+    #mat_C = Ps[:,:,t+1] + np.outer(Xs[:,t+1], Xs[:,t+1])
+    #sumSig += mat_C - mat_B.dot(inv(mat_A)).dot(mat_B.T)
+
   if structQ == 'full':
     Q = sumSig/T
   elif structQ == 'diag':
