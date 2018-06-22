@@ -1,5 +1,13 @@
 import numpy as np
 
+def mat_approx_svd(A):
+   "Returns the matrix approximation (using nb components) by SVD"
+   nb = 5
+   U, s, V = np.linalg.svd(A, full_matrices=True)
+   S = np.diag(s)
+   A_approx = np.dot(U[:,0:nb], np.dot(S[0:nb,0:nb], V[0:nb,:]))
+   return A_approx
+
 def inv_svd(A):
     "Returns the inverse matrix by SVD"
     U, s, V = np.linalg.svd(A, full_matrices=True)
@@ -12,25 +20,31 @@ def inv_svd(A):
 
 def sqrt_svd(A):
    "Returns the square root matrix by SVD"
-
    U, s, V = np.linalg.svd(A)#, full_matrices=True)
-
    sqrts = np.sqrt(s)
    n = np.size(s)
    sqrtS = np.zeros((n,n))
    sqrtS[:n, :n] = np.diag(sqrts)
-
    sqrtA=np.dot(V.T,np.dot(sqrtS, U.T))
-
    return sqrtA
 
 def climat_background(X_true):
+  "Returns a climatology (mean and covariance)"
   xb = np.mean(X_true,1)
   B  = np.cov(X_true)
   return xb, B
 
 def RMSE(E):
+  "Returns the Root Mean Squared Error"
   return np.sqrt(np.mean(E**2))
+
+def cov_prob(Xs, Ps, X_true):
+  "Returns the number of true state in the 95% confidence interval"
+  n, T = np.shape(X_true)
+  cov_prob = 0
+  for i_n in range(n):
+    cov_prob += sum((np.squeeze(Xs[i_n,:]) - 1.96 * np.sqrt(np.squeeze(Ps[i_n,i_n,:])) <= X_true[i_n,:]) & (np.squeeze(Xs[i_n,:]) + 1.96 * np.sqrt(np.squeeze(Ps[i_n,i_n,:])) >= X_true[i_n,:])) / T
+  return cov_prob
 
 def gen_truth(f, x0, T, Q, prng):
   sqQ = sqrt_svd(Q)

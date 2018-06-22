@@ -1,5 +1,5 @@
 # DESCRIPTION
-¡CEDA! is a Python library for the estimation of covariance matrices Q and R in data assimilation. The estimation procedure is based on the Expectation-Maximization (EM) algorithm for nonlinear state-space models resolved by two different Kalman procedures, the extended (EKS) and the ensemble (EnKS) Kalman smoothers. We test the algorithms on two dynamical models: the Lorenz-63 and Lorenz-96 choatic systems.
+¡CEDA! is a Python library for the estimation of covariance matrices Q and R in data assimilation. The estimation procedure is based on the Expectation-Maximization (EM) algorithm for nonlinear state-space models resolved by two different Kalman procedures, the extended (EKS) and the ensemble (EnKS) Kalman smoothers. We test the algorithms on two dynamical models: the Lorenz-63 and Lorenz-96 chaotic systems.
 
 # GETTING STARTED
 A description and a test of the code is given in the ipython notebook "test_CEDA.ipynb". 

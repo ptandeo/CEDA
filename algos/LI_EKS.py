@@ -1,5 +1,5 @@
 import numpy as np
-from algos.utils import RMSE, inv_svd
+from algos.utils import RMSE, inv_svd, cov_prob, mat_approx_svd
 from numpy.linalg import inv
 from tqdm import tqdm
 from algos.EM_EKS import _EKS, _likelihood
@@ -57,6 +57,8 @@ def _adaptive_EKF(Nx, No, T, xb, B, Q_init, R_init, Yo, f, jacF, h, jacH, alpha,
         Re=np.outer(d_all[:,t-1],d_all[:,t-1])-H_all[:,:,t-1].dot(Pf[:,:,t-1]).dot(H_all[:,:,t-1].T)
         Q_adapt[:,:,t+1]=Q_adapt[:,:,t]+(Qe-Q_adapt[:,:,t])/tau
         R_adapt[:,:,t+1]=R_adapt[:,:,t]+(Re-R_adapt[:,:,t])/tau
+        Q_adapt[:,:,t+1] = .5*(Q_adapt[:,:,t+1] + Q_adapt[:,:,t+1].T)
+        R_adapt[:,:,t+1] = .5*(R_adapt[:,:,t+1] + R_adapt[:,:,t+1].T)
     else:
       K_all[:,:,t]=K
       d_all[:,t]=d
@@ -131,6 +133,7 @@ def LI_EKS(params):
 
   loglik = np.zeros(nIter)
   rmse = np.zeros(nIter)
+  cov_prob_li = np.zeros(nIter)
 
   Q_all  = np.zeros(np.r_[Q.shape, nIter+1])
   R_all  = np.zeros(np.r_[R.shape, nIter+1])
@@ -145,7 +148,8 @@ def LI_EKS(params):
     Xs, Ps, Ps_lag, Xa, Pa, Xf, Pf, H = _EKS(Nx, No, T, xb, B, Q, R, Yo, f, jacF, h, jacH, alpha)
     loglik[k] = _likelihood(Xf, Pf, Yo, R, H)
     rmse[k] = RMSE(Xs - Xt)
-    
+    cov_prob_li[k] = cov_prob(Xs, Ps, Xt)
+
     # adaptive background state
     xb = Xs[:,0]
     B = Ps[:,:,0]
@@ -154,17 +158,18 @@ def LI_EKS(params):
     Xa, Pa, Xf, Pf, H, Q_adapt, R_adapt = _adaptive_EKF(Nx, No, T, xb, B, Q, R, Yo, f, jacF, h, jacH, alpha, tau)    
     Q = np.nanmedian(Q_adapt,2) # Q = Q_adapt[:,:,T]
     R = np.nanmedian(R_adapt,2) # R = R_adapt[:,:,T]
-    
+
     Xs_all[...,k] = Xs
     Q_all[:,:,k+1] = Q
     R_all[:,:,k+1] = R
 
   res = {
-          'smoothed_states'                                : Xs_all, # PIERRE: WHY DO WE KEEP ALL THE STATES (KEEP ONLY THE LAST ONE?)
-          'LI_model_noise_covariance'                      : Q_all,
-          'LI_observation_noise_covariance'                : R_all,
-          'loglikelihood'                                  : loglik,
-          'RMSE'                                           : rmse, 
-          'params'                                         : params
+          'smoothed_states'                : Xs_all, # PIERRE: WHY DO WE KEEP ALL THE STATES (KEEP ONLY THE LAST ONE?)
+          'LI_model_noise_covariance'      : Q_all,
+          'LI_observation_noise_covariance': R_all,
+          'loglikelihood'                  : loglik,
+          'RMSE'                           : rmse,
+          'cov_prob'                       : cov_prob_li,
+          'params'                         : params
         }
   return res

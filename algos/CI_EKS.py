@@ -34,8 +34,9 @@ def _adaptive_covariance_inflation_EKF(Nx, No, T, xb, B, lambda_init, sigma2_R_i
     
     # Forecast
     x = f(x)
-    P = lambda_*F.dot(P).dot(F.T) # + Q # no model perturbations but multiplicative inflation
+    P = lambda_*np.array([F]).dot(P).dot(F.T) # + Q # no model perturbations but multiplicative inflation ### MODIFS PIERRE: array([F])
     P = .5*(P + P.T)
+    P = np.array([P])
     Pf[:,:,t]=P; Xf[:,t]=x;
     
     # Update
@@ -57,10 +58,10 @@ def _adaptive_covariance_inflation_EKF(Nx, No, T, xb, B, lambda_init, sigma2_R_i
       sigma2_R_adapt[t+1]=sigma2_R_adapt[t]+(sigma2_R_tmp-sigma2_R_adapt[t])/tau
 
       # Li et al. 2009, Eq. (4)      
-      #lambda_tmp=(d_of.T.dot(d_of)-sigma2_R_adapt[t+1])/(np.trace(H.dot(Pf[:,:,t]).dot(H).T)) 
+      #lambda_tmp=(d_of.T.dot(d_of)-sigma2_R_adapt[t+1])/(np.trace(H.dot(Pf[:,:,t]).dot(H).T))
       
       # Miyoshi et al. 2011, Eq. (8)
-      #lambda_tmp=(np.trace(np.multiply(d_of.dot(d_of.T),1/sigma2_R_adapt[t+1]*np.eye(No,No))))/(np.trace(np.multiply(H.dot(Pf[:,:,t]).dot(H).T,1/sigma2_R_adapt[t+1]*np.eye(No,No)))) 
+      #lambda_tmp=(np.trace(np.multiply(d_of.dot(d_of.T),1/sigma2_R_adapt[t+1]*np.eye(No,No))))/(np.trace(np.multiply(H.dot(Pf[:,:,t]).dot(H).T,1/sigma2_R_adapt[t+1]*np.eye(No,No))))
       
       # Yin and Zhang 2015, Eq. (5)
       #lambda_tmp=np.sqrt((d_of.T.dot(d_of)-sigma2_R_adapt[t+1])/np.trace(H.dot(Pf[:,:,t]).dot(H).T)) 
@@ -189,8 +190,8 @@ def CI_EKS(params):
 
     # adaptive-covariance-inflation-EKF
     Xa, Pa, Xf, Pf, H, lmbda_adapt, sigma2_R_adapt, F_all, K_all = _adaptive_covariance_inflation_EKF(Nx, No, T, xb, B, lmbda, sigma2_R, Yo, f, jacF, h, jacH, tau)
-    lmbda = lmbda_adapt[T] # lmbda = np.nanmedian(lmbda_adapt) 
-    sigma2_R = sigma2_R_adapt[T] # sigma2_R = np.nanmedian(sigma2_R_adapt)
+    lmbda = np.nanmedian(lmbda_adapt) # lmbda = lmbda_adapt[T]
+    sigma2_R = np.nanmedian(sigma2_R_adapt) # sigma2_R = sigma2_R_adapt[T]
     
     Xs_all[...,k] = Xs
     lmbda_all[k+1] = lmbda
