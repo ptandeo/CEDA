@@ -95,3 +95,11 @@ def gen_obs(h, Xt, R, nb_assim, prng):
     if k%nb_assim == 0:
       Yo[:,k] = h(Xt[:,k+1]) + sqR.dot(prng.normal(size=No))
   return Yo
+
+def gaspari_cohn(r):
+    corr = 0
+    if 0<=r and r<1:
+        corr = 1 - 5/3*r**2 + 5/8*r**3 + 1/2*r**4 - 1/4*r**5
+    elif 1<=r and r<2:
+        corr = 4 - 5*r + 5/3*r**2 + 5/8*r**3 - 1/2*r**4 + 1/12*r**5 - 2/(3*r)
+    return corr

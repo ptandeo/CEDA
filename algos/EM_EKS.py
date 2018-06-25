@@ -1,5 +1,5 @@
 import numpy as np
-from algos.utils import RMSE, inv_svd, cov_prob
+from algos.utils import RMSE, inv_svd, cov_prob, gaspari_cohn
 from numpy.linalg import inv
 from tqdm import tqdm
 
@@ -215,6 +215,18 @@ def EM_EKS(params):
   else:
     baseQ = None
 
+  '''
+  # compute Gaspari Cohn matrices
+  gaspari_cohn_matrix_Q = np.eye(Nx)
+  gaspari_cohn_matrix_R = np.eye(No)
+  L = 2
+  for i_dist in range(1,10):
+    gaspari_cohn_matrix_Q += np.diag(gaspari_cohn(i_dist/L)*np.ones(Nx-i_dist),i_dist) + np.diag(gaspari_cohn(i_dist/L)*np.ones(Nx-i_dist),-i_dist)
+    gaspari_cohn_matrix_Q += np.diag(gaspari_cohn(i_dist/L)*np.ones(i_dist),Nx-i_dist) + np.diag(gaspari_cohn(i_dist/L)*np.ones(i_dist),Nx-i_dist).T
+    gaspari_cohn_matrix_R += np.diag(gaspari_cohn(i_dist/L)*np.ones(No-i_dist),i_dist) + np.diag(gaspari_cohn(i_dist/L)*np.ones(No-i_dist),-i_dist)
+    gaspari_cohn_matrix_R += np.diag(gaspari_cohn(i_dist/L)*np.ones(i_dist),No-i_dist) + np.diag(gaspari_cohn(i_dist/L)*np.ones(i_dist),No-i_dist).T
+  '''
+
   loglik = np.zeros(nIter)
   rmse_em = np.zeros(nIter)
   cov_prob_em = np.zeros(nIter)
@@ -245,13 +257,18 @@ def EM_EKS(params):
     # M-step
     xb_new, B_new, Q_new, R_new = _maximize(Xs, Ps, Ps_lag, Yo, h, jacH, f, jacF,
                             structQ=structQ, baseQ=baseQ)
+
+    # apply Schur product
     if estimateQ:
       Q = Q_new
+      #Q = np.multiply(gaspari_cohn_matrix_Q, Q_new)
     if estimateR:
       R = R_new
+      #R = np.multiply(gaspari_cohn_matrix_R, R_new)
     if estimateX0:
       xb = xb_new
       B = B_new
+      #B = np.multiply(gaspari_cohn_matrix_Q, B_new)
 
     Q_all[:,:,k+1] = Q
     R_all[:,:,k+1] = R
