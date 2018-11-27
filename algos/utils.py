@@ -47,12 +47,13 @@ def cov_prob(Xs, Ps, X_true):
   return cov_prob
 
 def gen_truth(f, x0, T, Q, prng):
-  sqQ = sqrt_svd(Q)
+  #sqQ = sqrt_svd(Q)
   Nx = x0.size
   Xt = np.zeros((Nx, T+1))
   Xt[:,0] = x0
   for k in range(T):
-    Xt[:,k+1] = f(Xt[:,k]) + sqQ.dot(prng.normal(size=Nx))
+    #Xt[:,k+1] = f(Xt[:,k]) + sqQ.dot(prng.normal(size=Nx))
+    Xt[:,k+1] = f(Xt[:,k]) + prng.multivariate_normal(np.zeros((Nx)), Q)
   return Xt
 
 def gen_truth_stochastic(f, x0, T, Q, subdivs, prng):
@@ -86,14 +87,15 @@ def gen_truth_multiplicative(f, x0, T, Q, prng):
   return Xt
 
 def gen_obs(h, Xt, R, nb_assim, prng):
-  sqR = sqrt_svd(R)
-  No = sqR.shape[0]
+  #sqR = sqrt_svd(R)
+  No = R.shape[0]
   T = Xt.shape[1] -1
   Yo = np.zeros((No, T))
   Yo[:] = np.nan
   for k in range(T):
     if k%nb_assim == 0:
-      Yo[:,k] = h(Xt[:,k+1]) + sqR.dot(prng.normal(size=No))
+      #Yo[:,k] = h(Xt[:,k+1]) + sqR.dot(prng.normal(size=No))
+      Yo[:,k] = h(Xt[:,k+1]) + prng.multivariate_normal(np.zeros((No)), R)
   return Yo
 
 def gaspari_cohn(r):
